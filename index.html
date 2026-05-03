@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="CollabVR: Collaborative Video Reasoning with Vision-Language and Video Generation Models">
+  <meta property="og:title" content="CollabVR: Collaborative Video Reasoning with Vision-Language and Video Generation Models"/>
+  <meta property="og:description" content="A closed-loop framework that couples a VLM planner with a VGM at step-level granularity for goal-directed video reasoning."/>
+  <meta property="og:url" content=""/>
+  <meta property="og:image" content="static/images/teaser.png" />
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+
+  <meta name="twitter:title" content="CollabVR: Collaborative Video Reasoning with Vision-Language and Video Generation Models">
+  <meta name="twitter:description" content="A closed-loop framework that couples a VLM planner with a VGM at step-level granularity.">
+  <meta name="twitter:image" content="static/images/teaser.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="keywords" content="video generation, visual reasoning, VLM, VGM, test-time scaling, thinking with video">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>
+    CollabVR: Collaborative Video Reasoning with Vision-Language and Video Generation Models
+  </title>
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+  rel="stylesheet">
+
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script src="static/js/bulma-carousel.min.js"></script>
+  <script src="static/js/bulma-slider.min.js"></script>
+  <script src="static/js/index.js"></script>
+</head>
+<body>
+
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-2 publication-title">
+              CollabVR: Collaborative Video Reasoning with Vision-Language and Video Generation Models
+            </h1>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">Anonymous Authors</span>
+            </div>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block"><em>Paper under double-blind review</em></span>
+            </div>
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <!-- Paper PDF link omitted for double-blind submission -->
+
+                <!-- Code link disabled until acceptance (deanonymizing) -->
+                <!--
+                <span class="link-block">
+                  <a href="" target="_blank"
+                  class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="fab fa-github"></i></span>
+                    <span>Code</span>
+                  </a>
+                </span>
+                -->
+
+                <!-- arXiv link disabled for double-blind submission -->
+                <!--
+                <span class="link-block">
+                  <a href="" target="_blank"
+                  class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="ai ai-arxiv"></i></span>
+                    <span>arXiv</span>
+                  </a>
+                </span>
+                -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Teaser figure -->
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body">
+        <!-- TODO: replace with Figure1 (concept figure) PNG export -->
+        <img src="static/images/teaser.png" alt="CollabVR concept: VLM as planner, VGM as simulator, in a closed loop."/>
+        <div class="content has-text-justified">
+          <p>
+            <strong>VLM as planner, VGM as simulator.</strong>
+            A VLM is strong at reasoning but weak at visual simulation; a VGM simulates short clips but lacks reasoning, which causes long-horizon drift and mid-clip simulation errors.
+            <strong>CollabVR</strong> couples them in a closed loop where the VLM plans the immediate next action, inspects each generated clip, and routes test-time compute across qualitatively distinct recovery strategies (re-generation, action splitting) matched to the diagnosed failure.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- End teaser -->
+
+
+  <!-- TL;DR / highlights -->
+  <section class="hero is-small" style="margin-top:-40px;">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="content">
+          <h2 class="title is-4">Highlights</h2>
+          <ul>
+            <li><strong>Closed-loop, step-level coupling.</strong> The VLM plans one action at a time, watches the clip the VGM produces, and decides whether to regenerate or split &mdash; replacing both upfront plans and post-hoc critiques.</li>
+            <li><strong>Consistent gains across open- and closed-source VGMs.</strong> On Gen-ViRe, CollabVR lifts <em>VBVR-Wan2.2</em> from <strong>0.391&nbsp;&rarr;&nbsp;0.531</strong> (+0.140) and <em>Veo 3.1</em> from <strong>0.481&nbsp;&rarr;&nbsp;0.550</strong> (+0.069), with the largest improvements on long-horizon Planning and Algorithmic tasks.</li>
+            <li><strong>Better cost&ndash;quality frontier.</strong> Rather than throwing more samples at the same prompt, CollabVR routes compute across qualitatively distinct recovery strategies (verifier-guided re-generation, action splitting) &mdash; reaching a strictly better cost&ndash;quality point than Pass@<em>k</em> and prior video test-time scaling baselines on both VGMs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Abstract -->
+  <section class="section hero is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Recent <em>Thinking with Video</em> approaches use Video Generation Models (VGMs) for visual reasoning by producing temporally coherent Chain-of-Frames as reasoning artifacts.
+              Even strong VGMs, however, exhibit two recurring failure modes on goal-directed tasks: <strong>long-horizon drift</strong> when a single prompt specifies a multi-step task, and <strong>mid-clip simulation errors</strong> that propagate through subsequent frames.
+              Both stem from the absence of explicit reasoning built upon the VGM's short-horizon visual prior, a role naturally filled by Vision-Language Models (VLMs), but where to place the VLM is non-trivial: upfront plans commit before any frame is generated and post-hoc critiques over whole videos intervene too late.
+              We propose <strong>CollabVR</strong>, a closed-loop framework that couples the VLM with the VGM at step-level granularity: the VLM plans the immediate next action, inspects the clip the VGM generates, and routes test-time compute across qualitatively distinct recovery strategies (re-generation, action splitting) matched to the diagnosed failure.
+              On Gen-ViRe and VBVR-Bench, CollabVR consistently improves both open-source and closed-source VGMs over single-inference, Pass@<em>k</em>, and prior video test-time scaling baselines at matched compute, with the largest gains on the hardest tasks.
+              It also yields further improvements on top of a reasoning-fine-tuned VGM, indicating that step-level VLM supervision is orthogonal to and stackable with reasoning-oriented fine-tuning.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- End abstract -->
+
+
+  <!-- Method -->
+  <section class="section hero">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-full">
+          <h2 class="title is-3">Method</h2>
+
+          <img src="static/images/architecture.png" alt="CollabVR overall architecture."/>
+          <div class="content has-text-justified">
+            <p>
+              <strong>Closed-loop architecture.</strong>
+              At each step, the VLM observes the current frame and decides one immediate action; the VGM renders a short clip realizing that action; the VLM then verifies whether the resulting last frame matches the planned target. Verification outcomes route compute across two complementary modules: <strong>M1 (progressive planning)</strong> chooses the per-state action granularity by adaptively selecting the number of sub-steps <em>N</em>, and <strong>M2 (verification + re-generation)</strong> rejects mid-state deviations and regenerates the offending clip up to a budget <em>M</em>. The two modules address different failure modes &mdash; long-horizon drift versus mid-clip error &mdash; and are activated independently per state.
+            </p>
+          </div>
+
+          <img src="static/images/algorithm.png" alt="Algorithm: CollabVR procedure." style="max-width:65%; height:auto; display:block; margin:1.5rem auto 0;"/>
+          <div class="content has-text-justified">
+            <p>
+              <strong>Algorithm.</strong>
+              At each planning step <em>t</em>, the VLM emits an action <em>a<sub>t</sub></em> conditioned on the current frame, task prompt, and history. The VGM renders a clip <em>c<sub>t</sub></em>, which the verifier accepts or rejects with a diagnosed failure mode <em>d</em>. On reject, the action is updated by prompt evolution and the clip is re-sampled, up to <em>M</em> attempts; if all <em>M</em> attempts fail, the framework routes to a recovery strategy chosen from <em>d</em>. On accept, the clip is appended and the loop continues until task completion or the cap <em>N<sub>max</sub></em>. Both <em>N</em> and the recovery path are decided online, per state.
+            </p>
+          </div>
+
+          <img src="static/images/progressive-planning_and_performance-cost-plot.png" alt="Pre-planning vs. progressive planning, with cost-performance plot." style="max-width:100%; height:auto; display:block; margin:1.5rem auto 0;"/>
+          <div class="content has-text-justified">
+            <p>
+              <strong>Pre-planning vs. progressive planning.</strong>
+              A natural extension of Chain-of-Thought to video is <em>pre-planning</em>: the VLM decomposes the task into <em>N</em> milestone prompts upfront and the VGM generates one clip per milestone. Pre-planning commits the full plan before any frame exists, so it cannot adapt to what the generator actually produces, and <em>N</em> itself is hard to fix from the prompt alone. CollabVR's <em>progressive planning</em> instead emits one action at a time and inspects the realized clip before continuing, so both later sub-steps and <em>N</em> adapt to the VGM's output. At matched cost, progressive planning yields a <strong>+13% relative gain</strong> over pre-planning on Gen-ViRe with VBVR-Wan2.2 (Module 1 only).
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Main results -->
+  <section class="hero is-small">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column is-full">
+            <h2 class="title is-3">Main Results</h2>
+          </div>
+        </div>
+
+        <div class="content has-text-justified">
+          <p>
+            We evaluate CollabVR on two benchmarks: <strong>Gen-ViRe</strong> (six-category visual reasoning over goal-directed video tasks) and <strong>VBVR-Bench</strong>. Across open-source (VBVR-Wan2.2, Cosmos-Predict2.5) and closed-source (Veo 3.1) VGMs, CollabVR delivers consistent gains over single-inference, Pass@<em>k</em>, and prior video test-time scaling baselines at matched compute.
+          </p>
+        </div>
+
+        <img src="static/images/pareto_GenViRe_horizontal.png" alt="Performance-cost trade-off on Gen-ViRe." style="max-width:100%; height:auto; display:block; margin:0 auto;"/>
+        <div class="content has-text-justified">
+          <p>
+            <strong>Performance&ndash;cost trade-off on Gen-ViRe.</strong>
+            Pass@<em>k</em> resampling plateaus quickly with cost, and prior video test-time scaling (VideoTPO) trades extra budget for modest improvement. CollabVR reaches a markedly higher score at lower budget on both VBVR-Wan2.2 and Veo 3.1, sitting on a strictly better point on the cost&ndash;quality frontier.
+          </p>
+        </div>
+
+        <img src="static/images/main_table_genvire.png" alt="Table 1: Gen-ViRe main results." style="max-width:100%; height:auto; display:block; margin:0 auto;"/>
+        <div class="content has-text-justified">
+          <p>
+            <strong>Gen-ViRe (Table 1).</strong>
+            CollabVR improves both VBVR-Wan2.2 (0.391&nbsp;&rarr;&nbsp;0.531, <strong>+0.140</strong>) and Veo 3.1 (0.481&nbsp;&rarr;&nbsp;0.550, <strong>+0.069</strong>) over the single-inference Pass@1 baseline. Gains are most pronounced on long-horizon categories (Planning, Algorithmic), where the closed-loop M1+M2 routing turns failures into correctable signals rather than letting them cascade.
+          </p>
+        </div>
+
+        <img src="static/images/main_table_vbvr.png" alt="Table 2: VBVR-Bench main results." style="max-width:100%; height:auto; display:block; margin:0 auto;"/>
+        <div class="content has-text-justified">
+          <p>
+            <strong>VBVR-Bench (Table 2).</strong>
+            On VBVR-Bench, CollabVR consistently outperforms baselines on open-source VGMs (VBVR-Wan2.2, Cosmos-Predict2.5), with the largest gains on categories that require multi-step spatial and transformation reasoning.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- End main results -->
+
+
+  <!-- Qualitative video comparisons -->
+  <section class="hero is-small">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column is-full">
+            <h2 class="title is-3">Qualitative Comparisons</h2>
+          </div>
+        </div>
+
+        <div id="results-carousel-qual" class="carousel results-carousel">
+
+          <div class="item">
+            <div class="content has-text-centered" style="margin-bottom:0.5rem;">
+              <p><em>"The scene shows a 10x10 grid with a green start square (containing an orange circular agent), a red end square, and multiple blue rectangular blocks. Starting from the green start square, the agent can move to adjacent cells (up, down, left, right) each step. The goal is to move the agent to the red end square along the shortest path that passes through all blue blocks (the agent must visit every blue block before reaching the red end square)."</em></p>
+            </div>
+            <div class="columns is-centered is-vcentered is-mobile">
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>Baseline</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/01_grid_block/baseline.mp4" type="video/mp4"></video>
+              </div>
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>+ CollabVR (Ours)</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/01_grid_block/ours.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="content has-text-centered" style="margin-bottom:0.5rem;">
+              <p><em>"A person opened a can of food. (Fixed camera angle)"</em></p>
+            </div>
+            <div class="columns is-centered is-vcentered is-mobile">
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>Baseline</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/02_can_opening/baseline.mp4" type="video/mp4"></video>
+              </div>
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>+ CollabVR (Ours)</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/02_can_opening/ours.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="content has-text-centered" style="margin-bottom:0.5rem;">
+              <p><em>"Your task is to identify all hollow points. These are circles that are not filled in (white interior with black border). Circle each hollow point with a red ring."</em></p>
+            </div>
+            <div class="columns is-centered is-vcentered is-mobile">
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>Baseline</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/03_hollow_points/baseline.mp4" type="video/mp4"></video>
+              </div>
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>+ CollabVR (Ours)</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/03_hollow_points/ours.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="content has-text-centered" style="margin-bottom:0.5rem;">
+              <p><em>"The scene shows a 10x10 grid with a green start point, a red end point, and yellow cells marked with numbers 1, 2, and 3. An orange circular agent is positioned at the green start point. The agent can move to adjacent cells (up, down, left, right). Starting from the green start point, the agent must visit the numbered yellow cells in numerical order (1, then 2, then 3), taking the shortest path between each consecutive pair of numbered cells. After visiting all numbered cells in sequence, the agent must reach the red end point, also following the shortest path."</em></p>
+            </div>
+            <div class="columns is-centered is-vcentered is-mobile">
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>Baseline</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/04_grid_sequence/baseline.mp4" type="video/mp4"></video>
+              </div>
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>+ CollabVR (Ours)</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/04_grid_sequence/ours.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="content has-text-centered" style="margin-bottom:0.5rem;">
+              <p><em>"This is a first-person perspective. The task is to get a bottle of Coke from the refrigerator. The video must show the entire process of completing the task in a physically realistic and continuous sequence of actions."</em></p>
+            </div>
+            <div class="columns is-centered is-vcentered is-mobile">
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>Baseline</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/05_coke_fridge/baseline.mp4" type="video/mp4"></video>
+              </div>
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>+ CollabVR (Ours)</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/05_coke_fridge/ours.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="content has-text-centered" style="margin-bottom:0.5rem;">
+              <p><em>"Move each animal face into its corresponding dark outline."</em></p>
+            </div>
+            <div class="columns is-centered is-vcentered is-mobile">
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>Baseline</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/06_animal_matching/baseline.mp4" type="video/mp4"></video>
+              </div>
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>+ CollabVR (Ours)</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/06_animal_matching/ours.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="content has-text-centered" style="margin-bottom:0.5rem;">
+              <p><em>"A dashcam perspective of a vehicle in 'stop-and-go' highway traffic. The video shows the vehicle smoothly following the car in front (a white SUV). The lead SUV travels at a steady speed, then suddenly decelerates and comes to a complete stop."</em></p>
+            </div>
+            <div class="columns is-centered is-vcentered is-mobile">
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>Baseline</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/07_auto_drive/baseline.mp4" type="video/mp4"></video>
+              </div>
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>+ CollabVR (Ours)</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/07_auto_drive/ours.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="content has-text-centered" style="margin-bottom:0.5rem;">
+              <p><em>"This is a Raven's Progressive Matrix reasoning task. Analyze the visual patterns across all rows and columns in this 3x3 grid. Deduce the logical rule that governs the entire matrix. Then, generate the single, correct shape in the empty bottom-right square that perfectly completes this pattern."</em></p>
+            </div>
+            <div class="columns is-centered is-vcentered is-mobile">
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>Baseline</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/08_raven_matrix/baseline.mp4" type="video/mp4"></video>
+              </div>
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>+ CollabVR (Ours)</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/08_raven_matrix/ours.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="content has-text-centered" style="margin-bottom:0.5rem;">
+              <p><em>"Maintain a static view. Draw a line connecting point A to point D, and end the video once the line is fully drawn."</em></p>
+            </div>
+            <div class="columns is-centered is-vcentered is-mobile">
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>Baseline</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/09_geometric_line/baseline.mp4" type="video/mp4"></video>
+              </div>
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>+ CollabVR (Ours)</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/09_geometric_line/ours.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="content has-text-centered" style="margin-bottom:0.5rem;">
+              <p><em>"Instantly reflect this pattern along the central vertical axis, while keeping the existing colored pattern unchanged. Static camera perspective, no zoom or pan."</em></p>
+            </div>
+            <div class="columns is-centered is-vcentered is-mobile">
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>Baseline</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/10_symmetry/baseline.mp4" type="video/mp4"></video>
+              </div>
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>+ CollabVR (Ours)</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/10_symmetry/ours.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="content has-text-centered" style="margin-bottom:0.5rem;">
+              <p><em>"Identify and circle the asymmetrical shape among the displayed shapes. Only one shape lacks symmetry."</em></p>
+            </div>
+            <div class="columns is-centered is-vcentered is-mobile">
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>Baseline</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/11_asymmetrical_shape/baseline.mp4" type="video/mp4"></video>
+              </div>
+              <div class="column is-half has-text-centered">
+                <p class="subtitle is-6"><strong>+ CollabVR (Ours)</strong></p>
+                <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/11_asymmetrical_shape/ours.mp4" type="video/mp4"></video>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <h3 class="title is-4" style="margin-top:3rem;">Pre-planning vs. Progressive Planning (Ours)</h3>
+        <div class="content has-text-justified">
+          <p>
+            A direct comparison of <em>pre-planning</em> (the VLM commits to <em>N</em> milestone prompts upfront) versus CollabVR's <em>progressive planning</em> (the VLM emits one action at a time and adapts <em>N</em> to what the VGM produces). Same task, same VGM, matched cost.
+          </p>
+        </div>
+        <div class="content has-text-centered">
+          <p><em>"The scene shows a network of nodes connected by directed edges (edges with arrows indicating direction) with a green starting node, a red ending node, and a blue triangular agent positioned at the green starting node. The agent can only move along edges in the direction they point, moving from one node to an adjacent node each step. Move the blue triangular agent from the green starting node to the red ending node along the path with the minimum number of steps."</em></p>
+        </div>
+        <div class="columns is-centered is-vcentered is-mobile">
+          <div class="column is-half has-text-centered">
+            <p class="subtitle is-6"><strong>Pre-planning</strong></p>
+            <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/preplan_directed_graph/pre_plan.mp4" type="video/mp4"></video>
+          </div>
+          <div class="column is-half has-text-centered">
+            <p class="subtitle is-6"><strong>Progressive planning (Ours)</strong></p>
+            <video autoplay muted loop playsinline style="width:100%;"><source src="static/videos/preplan_directed_graph/ours.mp4" type="video/mp4"></video>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+  <!-- End qualitative -->
+
+
+  <!-- BibTeX (anonymized) -->
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code>@inproceedings{collabvr_anon,
+  title  = {CollabVR: Collaborative Video Reasoning with Vision-Language and Video Generation Models},
+  author = {Anonymous Authors},
+  year   = {2026},
+  note   = {Under double-blind review. Author and venue details redacted for anonymity.}
+}</code></pre>
+    </div>
+  </section>
+
+
+  <footer class="footer">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+            <p>
+              This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a> which was adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+              You are free to borrow the source code of this website, we just ask that you link back to this page in the footer. <br> This website is licensed under a <a rel="license"  href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

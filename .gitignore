@@ -1,0 +1,9 @@
+# Auxiliary video assets kept on disk for reference but not needed by the site
+static/videos/**/gt.mp4
+static/videos/**/*_frames/
+static/videos/**/info.txt
+static/videos/**/input.png
+static/videos/**/metrics.json
+static/videos/**/metadata.json
+static/videos/**/*_prompt.txt
+static/videos/preplan_directed_graph/baseline.mp4
